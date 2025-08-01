@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+  db:
+    # Use the official PostgreSQL image
+    image: postgres:13
+    # Restart the container if it stops
+    restart: always
+    # Environment variables for the database
+    env_file:
+      - .env
+    # Persistent storage for the database data
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+
+  web:
+    # Build the image from the Dockerfile in the current directory
+    build: .
+    # Link the web service to the database service
+    depends_on:
+      - db
+    # Map port 8000 on the host to port 8000 on the container
+    ports:
+      - "8080:8080"
+    # Environment variables for the Django application
+    env_file:
+      - .env
+    # Persistent storage for the project files
+    volumes:
+      - .:/code
+    # Run the Django server
+    command: gunicorn --bind 0.0.0.0:8080 project_olap.wsgi:application
+
+volumes:
+  postgres_data:
